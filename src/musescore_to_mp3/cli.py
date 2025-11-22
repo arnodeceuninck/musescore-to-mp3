@@ -28,6 +28,8 @@ Examples:
   %(prog)s --voice-group bass input.mscz
   %(prog)s --voice-group baritone --output my_output.mp3 input.mscz
   %(prog)s --voice-group tenor --volume-boost 20 input.mscz
+  %(prog)s --all-voices input.mscz
+  %(prog)s --all-voices --output my_voices_dir input.mscz
         """,
     )
     
@@ -47,6 +49,12 @@ Examples:
         "-v", "--voice-group",
         type=str,
         help="Voice group to highlight (e.g., bass, baritone, tenor, soprano)",
+    )
+    
+    parser.add_argument(
+        "--all-voices",
+        action="store_true",
+        help="Export MP3s for all voice parts in the score (one file per voice)",
     )
     
     parser.add_argument(
@@ -106,11 +114,24 @@ def main(args: Optional[list] = None) -> int:
         print(f"Error: Input file must be a .mscz file", file=sys.stderr)
         return 1
     
-    # Determine output file path
-    if parsed_args.output:
-        output_path = Path(parsed_args.output)
+    # Validate arguments
+    if parsed_args.all_voices and parsed_args.voice_group:
+        print(f"Error: Cannot use both --all-voices and --voice-group", file=sys.stderr)
+        return 1
+    
+    # Determine output file path or directory
+    if parsed_args.all_voices:
+        # For all-voices, output is a directory
+        if parsed_args.output:
+            output_path = Path(parsed_args.output)
+        else:
+            output_path = input_path.parent / f"{input_path.stem}_voices"
     else:
-        output_path = input_path.with_name(f"{input_path.stem}_output.mp3")
+        # For single voice or plain conversion, output is a file
+        if parsed_args.output:
+            output_path = Path(parsed_args.output)
+        else:
+            output_path = input_path.with_name(f"{input_path.stem}_output.mp3")
     
     try:
         # Create converter instance
@@ -120,10 +141,25 @@ def main(args: Optional[list] = None) -> int:
         )
         
         # Convert file
-        print(f"Converting '{input_path}' to '{output_path}'...")
-        
-        if parsed_args.voice_group:
+        if parsed_args.all_voices:
+            # Export all voice parts
+            print(f"Converting all voice parts from '{input_path}'...")
+            print(f"Output directory: '{output_path}'\n")
+            
+            generated_files = converter.convert_all_voices(
+                input_file=input_path,
+                output_dir=output_path,
+                voice_volume_boost=parsed_args.volume_boost,
+                master_volume=parsed_args.master_volume,
+            )
+            
+            print(f"\n✓ Successfully created {len(generated_files)} MP3 file(s) in '{output_path}'")
+            
+        elif parsed_args.voice_group:
+            # Export single voice with highlighting
+            print(f"Converting '{input_path}' to '{output_path}'...")
             print(f"Highlighting voice group: {parsed_args.voice_group}")
+            
             converter.convert_with_voice_highlight(
                 input_file=input_path,
                 output_file=output_path,
@@ -131,13 +167,20 @@ def main(args: Optional[list] = None) -> int:
                 voice_volume_boost=parsed_args.volume_boost,
                 master_volume=parsed_args.master_volume,
             )
+            
+            print(f"✓ Successfully created '{output_path}'")
+            
         else:
+            # Plain conversion
+            print(f"Converting '{input_path}' to '{output_path}'...")
+            
             converter.convert(
                 input_file=input_path,
                 output_file=output_path,
             )
+            
+            print(f"✓ Successfully created '{output_path}'")
         
-        print(f"✓ Successfully created '{output_path}'")
         return 0
         
     except MuseScoreConverterError as e:

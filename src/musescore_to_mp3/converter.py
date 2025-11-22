@@ -3,7 +3,7 @@
 import subprocess
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import tempfile
 import platform
 
@@ -178,6 +178,111 @@ class MuseScoreConverter:
                     print(f"Temporary file kept: {temp_mscz}")
                 else:
                     temp_mscz.unlink()
+    
+    def convert_all_voices(
+        self,
+        input_file: Path,
+        output_dir: Optional[Path] = None,
+        voice_volume_boost: int = 10,
+        master_volume: int = 80,
+    ) -> List[Path]:
+        """Convert a MuseScore file to multiple MP3s, one for each voice part.
+        
+        This method:
+        1. Extracts the .mscz file
+        2. Identifies all voice parts in the score
+        3. Creates a modified version for each voice part
+        4. Exports each to MP3 in an organized directory structure
+        5. Cleans up temporary files
+        
+        Args:
+            input_file: Path to the input .mscz file
+            output_dir: Directory to save MP3s (default: <input_stem>_voices/)
+            voice_volume_boost: Volume boost for the voice in dB
+            master_volume: Master volume percentage for other parts
+            
+        Returns:
+            List of paths to the generated MP3 files
+            
+        Raises:
+            InvalidMSCZFileError: If the input file is invalid
+            XMLModificationError: If XML modification fails
+            MuseScoreExecutionError: If conversion fails
+        """
+        # Determine output directory
+        if output_dir is None:
+            output_dir = input_file.parent / f"{input_file.stem}_voices"
+        
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Get all voice parts from the score
+        with MSCZFile(input_file) as mscz:
+            tree = mscz.parse_xml()
+            parts = XMLModifier.get_all_parts(tree)
+        
+        if not parts:
+            raise InvalidMSCZFileError("No voice parts found in the score")
+        
+        print(f"Found {len(parts)} voice part(s) in '{input_file.name}':")
+        for _, part_name in parts:
+            print(f"  - {part_name}")
+        
+        # Generate MP3 for each voice part
+        generated_files = []
+        base_name = input_file.stem
+        
+        for i, (part_element, part_name) in enumerate(parts, 1):
+            # Create a safe filename from the part name
+            safe_name = self._sanitize_filename(part_name)
+            output_file = output_dir / f"{base_name}_{i:02d}_{safe_name}.mp3"
+            
+            print(f"\n[{i}/{len(parts)}] Processing '{part_name}'...")
+            
+            try:
+                # Convert with this voice highlighted
+                self.convert_with_voice_highlight(
+                    input_file=input_file,
+                    output_file=output_file,
+                    voice_group=part_name,
+                    voice_volume_boost=voice_volume_boost,
+                    master_volume=master_volume,
+                )
+                
+                generated_files.append(output_file)
+                print(f"  ✓ Created '{output_file.name}'")
+                
+            except Exception as e:
+                print(f"  ✗ Failed to process '{part_name}': {e}")
+                continue
+        
+        return generated_files
+    
+    @staticmethod
+    def _sanitize_filename(filename: str) -> str:
+        """Sanitize a filename by removing or replacing invalid characters.
+        
+        Args:
+            filename: The filename to sanitize
+            
+        Returns:
+            Sanitized filename safe for use on all platforms
+        """
+        # Replace invalid characters with underscores
+        invalid_chars = '<>:"/\\|?*'
+        for char in invalid_chars:
+            filename = filename.replace(char, '_')
+        
+        # Replace multiple spaces with single space
+        filename = ' '.join(filename.split())
+        
+        # Remove leading/trailing spaces and dots
+        filename = filename.strip(' .')
+        
+        # Limit length
+        if len(filename) > 100:
+            filename = filename[:100]
+        
+        return filename or "unnamed"
     
     def _export_to_mp3(self, input_file: Path, output_file: Path) -> None:
         """Export a MuseScore file to MP3 using the MuseScore executable.

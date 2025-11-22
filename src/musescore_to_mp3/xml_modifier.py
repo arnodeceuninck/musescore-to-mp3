@@ -397,3 +397,15 @@ class XMLModifier:
         """
         parts = VoiceMatcher._get_all_parts(tree)
         return [name for _, name in parts]
+    
+    @staticmethod
+    def get_all_parts(tree: ET.ElementTree) -> List[tuple]:
+        """Get all parts with their elements and names from the score.
+        
+        Args:
+            tree: The MuseScore XML tree
+            
+        Returns:
+            List of (part_element, part_name) tuples
+        """
+        return VoiceMatcher._get_all_parts(tree)
