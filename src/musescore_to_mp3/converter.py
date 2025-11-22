@@ -122,6 +122,7 @@ class MuseScoreConverter:
         voice_group: str,
         voice_volume_boost: int = 10,
         master_volume: int = 80,
+        use_choir: bool = False,
     ) -> None:
         """Convert a MuseScore file to MP3 with voice highlighting.
         
@@ -138,6 +139,7 @@ class MuseScoreConverter:
             voice_group: Voice group to highlight (e.g., "bass", "baritone")
             voice_volume_boost: Volume boost for the voice in dB
             master_volume: Master volume percentage for other parts
+            use_choir: If True, convert non-highlighted voice parts to choir instruments
             
         Raises:
             InvalidMSCZFileError: If the input file is invalid
@@ -159,10 +161,14 @@ class MuseScoreConverter:
                     voice_group=voice_group,
                     voice_volume_boost=voice_volume_boost,
                     master_volume=master_volume,
+                    use_choir=use_choir,
                 )
                 
                 # Save modified XML
                 mscz.save_xml(tree)
+                
+                # Update audiosettings.json to use MS Basic without presets
+                mscz.update_audiosettings()
                 
                 # Create modified .mscz file
                 temp_mscz = Path(tempfile.mktemp(suffix=".mscz", prefix="modified_"))
@@ -185,6 +191,7 @@ class MuseScoreConverter:
         output_dir: Optional[Path] = None,
         voice_volume_boost: int = 10,
         master_volume: int = 80,
+        use_choir: bool = False,
     ) -> List[Path]:
         """Convert a MuseScore file to multiple MP3s, one for each voice part.
         
@@ -200,6 +207,7 @@ class MuseScoreConverter:
             output_dir: Directory to save MP3s (default: <input_stem>_voices/)
             voice_volume_boost: Volume boost for the voice in dB
             master_volume: Master volume percentage for other parts
+            use_choir: If True, convert non-highlighted voice parts to choir instruments
             
         Returns:
             List of paths to the generated MP3 files
@@ -261,6 +269,7 @@ class MuseScoreConverter:
                     voice_group=part_name,
                     voice_volume_boost=voice_volume_boost,
                     master_volume=master_volume,
+                    use_choir=use_choir,
                 )
                 
                 generated_files.append(output_file)
@@ -280,6 +289,7 @@ class MuseScoreConverter:
         all_voices: bool = False,
         voice_volume_boost: int = 10,
         master_volume: int = 80,
+        use_choir: bool = False,
     ) -> dict:
         """Convert all MuseScore files in a directory to MP3.
         
@@ -290,6 +300,7 @@ class MuseScoreConverter:
             all_voices: If True, export all voice parts for each file
             voice_volume_boost: Volume boost for the voice in dB
             master_volume: Master volume percentage for other parts
+            use_choir: If True, convert non-highlighted voice parts to choir instruments
             
         Returns:
             Dictionary mapping input files to their output files/directories
@@ -332,6 +343,7 @@ class MuseScoreConverter:
                         output_dir=file_output_dir,
                         voice_volume_boost=voice_volume_boost,
                         master_volume=master_volume,
+                        use_choir=use_choir,
                     )
                     results[mscz_file] = file_output_dir
                     print(f"✓ Exported {len(generated_files)} file(s) to '{file_output_dir}'")
@@ -345,6 +357,7 @@ class MuseScoreConverter:
                         voice_group=voice_group,
                         voice_volume_boost=voice_volume_boost,
                         master_volume=master_volume,
+                        use_choir=use_choir,
                     )
                     results[mscz_file] = output_file
                     print(f"✓ Created '{output_file.name}'")

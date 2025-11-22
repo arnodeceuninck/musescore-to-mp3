@@ -74,6 +74,12 @@ Examples:
     )
     
     parser.add_argument(
+        "--use-choir",
+        action="store_true",
+        help="Convert non-highlighted voice parts to choir instruments (prevents issues with non-standard instruments)",
+    )
+    
+    parser.add_argument(
         "--musescore-path",
         type=str,
         default="MuseScore4",
@@ -166,6 +172,7 @@ def main(args: Optional[list] = None) -> int:
                 all_voices=parsed_args.all_voices,
                 voice_volume_boost=parsed_args.volume_boost,
                 master_volume=parsed_args.master_volume,
+                use_choir=parsed_args.use_choir,
             )
             
             # Return success if at least one file was processed successfully
@@ -182,6 +189,7 @@ def main(args: Optional[list] = None) -> int:
                 output_dir=output_path,
                 voice_volume_boost=parsed_args.volume_boost,
                 master_volume=parsed_args.master_volume,
+                use_choir=parsed_args.use_choir,
             )
             
             print(f"\n✓ Successfully created {len(generated_files)} MP3 file(s) in '{output_path}'")
@@ -197,6 +205,7 @@ def main(args: Optional[list] = None) -> int:
                 voice_group=parsed_args.voice_group,
                 voice_volume_boost=parsed_args.volume_boost,
                 master_volume=parsed_args.master_volume,
+                use_choir=parsed_args.use_choir,
             )
             
             print(f"✓ Successfully created '{output_path}'")

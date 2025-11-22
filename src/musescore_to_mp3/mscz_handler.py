@@ -3,6 +3,7 @@
 import zipfile
 import tempfile
 import shutil
+import json
 from pathlib import Path
 from typing import Optional
 import xml.etree.ElementTree as ET
@@ -118,6 +119,72 @@ class MSCZFile:
             tree.write(xml_path, encoding="utf-8", xml_declaration=True)
         except Exception as e:
             raise XMLModificationError(f"Failed to save XML: {e}")
+    
+    def remove_audiosettings(self) -> None:
+        """Remove the audiosettings.json file if it exists.
+        
+        This ensures that MuseScore uses the instrument settings from the .mscx file
+        instead of cached mixer settings that might have incorrect presets.
+        
+        DEPRECATED: Use update_audiosettings() instead.
+        """
+        if not self.temp_dir:
+            return
+        
+        audiosettings_path = self.temp_dir / "audiosettings.json"
+        if audiosettings_path.exists():
+            audiosettings_path.unlink()
+    
+    def update_audiosettings(self) -> None:
+        """Update the audiosettings.json file to use MS Basic without specific presets.
+        
+        This removes preset information (presetBank, presetName, presetProgram) from
+        tracks, allowing MuseScore to use the instrument definitions from the .mscx file
+        while keeping the MS Basic soundfont setting.
+        """
+        if not self.temp_dir:
+            return
+        
+        audiosettings_path = self.temp_dir / "audiosettings.json"
+        if not audiosettings_path.exists():
+            return
+        
+        try:
+            # Load the JSON file
+            with open(audiosettings_path, 'r', encoding='utf-8') as f:
+                audio_settings = json.load(f)
+            
+            # Update each track to remove preset information
+            if 'tracks' in audio_settings:
+                for track in audio_settings['tracks']:
+                    if 'in' in track and 'resourceMeta' in track['in']:
+                        resource_meta = track['in']['resourceMeta']
+                        
+                        # Update attributes to only keep MS Basic soundfont
+                        if 'attributes' in resource_meta:
+                            attributes = resource_meta['attributes']
+                            
+                            # Remove preset-specific attributes
+                            attributes.pop('presetBank', None)
+                            attributes.pop('presetName', None)
+                            attributes.pop('presetProgram', None)
+                            
+                            # Ensure soundFontName is set to MS Basic
+                            if 'soundFontName' not in attributes:
+                                attributes['soundFontName'] = 'MS Basic'
+                        
+                        # Update the id to just be "MS Basic" without preset info
+                        if resource_meta.get('id', '').startswith('MS Basic\\'):
+                            resource_meta['id'] = 'MS Basic'
+            
+            # Save the updated JSON file
+            with open(audiosettings_path, 'w', encoding='utf-8') as f:
+                json.dump(audio_settings, f, indent=4)
+                
+        except Exception as e:
+            # If we fail to update, just remove the file as fallback
+            if audiosettings_path.exists():
+                audiosettings_path.unlink()
     
     def create_modified_mscz(self, output_path: Path) -> None:
         """Create a new .mscz file from the modified contents.

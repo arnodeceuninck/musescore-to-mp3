@@ -10,6 +10,169 @@ from .voice_matcher import VoiceMatcher
 class XMLModifier:
     """Handles modification of MuseScore XML."""
     
+    # Map voice groups to choir instruments with proper MIDI settings
+    VOICE_TO_CHOIR = {
+        "soprano": {
+            "id": "soprano",
+            "instrumentId": "voice.soprano",
+            "longName": "Soprano",
+            "shortName": "S.",
+            "minPitchP": "60",
+            "maxPitchP": "84",
+            "minPitchA": "60",
+            "maxPitchA": "79",
+        },
+        "soprano1": {
+            "id": "soprano",
+            "instrumentId": "voice.soprano",
+            "longName": "Soprano",
+            "shortName": "S.",
+            "minPitchP": "60",
+            "maxPitchP": "84",
+            "minPitchA": "60",
+            "maxPitchA": "79",
+        },
+        "soprano2": {
+            "id": "soprano",
+            "instrumentId": "voice.soprano",
+            "longName": "Soprano",
+            "shortName": "S.",
+            "minPitchP": "60",
+            "maxPitchP": "84",
+            "minPitchA": "60",
+            "maxPitchA": "79",
+        },
+        "alto": {
+            "id": "alto",
+            "instrumentId": "voice.alto",
+            "longName": "Alto",
+            "shortName": "A.",
+            "minPitchP": "52",
+            "maxPitchP": "77",
+            "minPitchA": "55",
+            "maxPitchA": "74",
+        },
+        "alto1": {
+            "id": "alto",
+            "instrumentId": "voice.alto",
+            "longName": "Alto",
+            "shortName": "A.",
+            "minPitchP": "52",
+            "maxPitchP": "77",
+            "minPitchA": "55",
+            "maxPitchA": "74",
+        },
+        "alto2": {
+            "id": "alto",
+            "instrumentId": "voice.alto",
+            "longName": "Alto",
+            "shortName": "A.",
+            "minPitchP": "52",
+            "maxPitchP": "77",
+            "minPitchA": "55",
+            "maxPitchA": "74",
+        },
+        "tenor": {
+            "id": "tenor",
+            "instrumentId": "voice.tenor",
+            "longName": "Tenor",
+            "shortName": "T.",
+            "minPitchP": "48",
+            "maxPitchP": "72",
+            "minPitchA": "48",
+            "maxPitchA": "69",
+            "clef": "G8vb",
+        },
+        "tenor1": {
+            "id": "tenor",
+            "instrumentId": "voice.tenor",
+            "longName": "Tenor",
+            "shortName": "T.",
+            "minPitchP": "48",
+            "maxPitchP": "72",
+            "minPitchA": "48",
+            "maxPitchA": "69",
+            "clef": "G8vb",
+        },
+        "tenor2": {
+            "id": "tenor",
+            "instrumentId": "voice.tenor",
+            "longName": "Tenor",
+            "shortName": "T.",
+            "minPitchP": "48",
+            "maxPitchP": "72",
+            "minPitchA": "48",
+            "maxPitchA": "69",
+            "clef": "G8vb",
+        },
+        "bass": {
+            "id": "bass",
+            "instrumentId": "voice.bass",
+            "longName": "Bass",
+            "shortName": "B.",
+            "minPitchP": "38",
+            "maxPitchP": "62",
+            "minPitchA": "41",
+            "maxPitchA": "60",
+            "clef": "F",
+        },
+        "bass1": {
+            "id": "bass",
+            "instrumentId": "voice.bass",
+            "longName": "Bass",
+            "shortName": "B.",
+            "minPitchP": "38",
+            "maxPitchP": "62",
+            "minPitchA": "41",
+            "maxPitchA": "60",
+            "clef": "F",
+        },
+        "bass2": {
+            "id": "bass",
+            "instrumentId": "voice.bass",
+            "longName": "Bass",
+            "shortName": "B.",
+            "minPitchP": "38",
+            "maxPitchP": "62",
+            "minPitchA": "41",
+            "maxPitchA": "60",
+            "clef": "F",
+        },
+        "baritone": {
+            "id": "bass",
+            "instrumentId": "voice.bass",
+            "longName": "Bass",
+            "shortName": "B.",
+            "minPitchP": "38",
+            "maxPitchP": "62",
+            "minPitchA": "41",
+            "maxPitchA": "60",
+            "clef": "F",
+        },
+        "baritone1": {
+            "id": "bass",
+            "instrumentId": "voice.bass",
+            "longName": "Bass",
+            "shortName": "B.",
+            "minPitchP": "38",
+            "maxPitchP": "62",
+            "minPitchA": "41",
+            "maxPitchA": "60",
+            "clef": "F",
+        },
+        "baritone2": {
+            "id": "bass",
+            "instrumentId": "voice.bass",
+            "longName": "Bass",
+            "shortName": "B.",
+            "minPitchP": "38",
+            "maxPitchP": "62",
+            "minPitchA": "41",
+            "maxPitchA": "60",
+            "clef": "F",
+        },
+    }
+    
     # Map voice groups to saxophone instruments with full properties
     VOICE_TO_SAXOPHONE = {
         "soprano": {
@@ -216,6 +379,7 @@ class XMLModifier:
         replacement_instrument: str = "Baritone Saxophone",
         voice_volume_boost: int = 10,
         master_volume: int = 80,
+        use_choir: bool = False,
     ) -> None:
         """Modify a voice part to stand out.
         
@@ -224,6 +388,7 @@ class XMLModifier:
         2. Replaces its instrument
         3. Boosts its volume
         4. Reduces the master volume for other parts
+        5. Optionally converts non-highlighted voice parts to choir instruments
         
         Args:
             tree: The MuseScore XML tree
@@ -231,6 +396,7 @@ class XMLModifier:
             replacement_instrument: Instrument name to replace with
             voice_volume_boost: Volume boost for the voice in dB
             master_volume: Master volume percentage for other parts
+            use_choir: If True, convert other voice parts to choir instruments
             
         Raises:
             VoiceNotFoundError: If the voice group is not found
@@ -255,6 +421,10 @@ class XMLModifier:
             
             # Reduce master volume for all other parts
             XMLModifier._set_other_parts_volume(tree, target_part, master_volume)
+            
+            # If use_choir is True, convert other voice parts to choir instruments
+            if use_choir:
+                XMLModifier._convert_other_parts_to_choir(tree, target_part)
             
         except Exception as e:
             raise XMLModificationError(f"Failed to modify voice part: {e}")
@@ -409,3 +579,112 @@ class XMLModifier:
             List of (part_element, part_name) tuples
         """
         return VoiceMatcher._get_all_parts(tree)
+    
+    @staticmethod
+    def _convert_other_parts_to_choir(tree: ET.ElementTree, target_part: ET.Element) -> None:
+        """Convert all voice parts (except the target) to choir instruments.
+        
+        This replaces parts that might be using non-standard instruments (e.g., clarinet)
+        with proper choir voice instruments to ensure better sound quality.
+        
+        Args:
+            tree: The MuseScore XML tree
+            target_part: The part to exclude (the highlighted voice)
+        """
+        root = tree.getroot()
+        
+        for part in root.findall(".//Part"):
+            if part is target_part:
+                continue
+            
+            # Get the instrument element
+            instrument = part.find(".//Instrument")
+            if instrument is None:
+                continue
+            
+            # Check if this is a voice part by looking at the instrumentId
+            instrument_id_elem = instrument.find("instrumentId")
+            if instrument_id_elem is None:
+                continue
+            
+            instrument_id = instrument_id_elem.text
+            if not instrument_id or not instrument_id.startswith("voice."):
+                # Not a voice part, skip it
+                continue
+            
+            # Determine which voice type this is based on the instrumentId
+            voice_type = instrument_id.replace("voice.", "")  # e.g., "soprano", "alto", "tenor", "bass"
+            
+            # Get the choir configuration for this voice type
+            choir_config = XMLModifier.VOICE_TO_CHOIR.get(voice_type)
+            if not choir_config:
+                # Unknown voice type, skip
+                continue
+            
+            # Replace with choir instrument
+            XMLModifier._replace_with_choir_instrument(part, choir_config)
+    
+    @staticmethod
+    def _replace_with_choir_instrument(part: ET.Element, choir_config: dict) -> None:
+        """Replace the instrument for a part with a choir voice instrument.
+        
+        Args:
+            part: The Part element to modify
+            choir_config: Dictionary with choir instrument properties
+        """
+        # Find the Instrument element
+        instrument = part.find(".//Instrument")
+        
+        if instrument is None:
+            # Create one if it doesn't exist
+            staff = part.find(".//Staff")
+            if staff is None:
+                raise XMLModificationError("Cannot find Staff element in part")
+            instrument = ET.SubElement(staff, "Instrument")
+        
+        # Set the id attribute
+        instrument.set("id", choir_config["id"])
+        
+        # Update or create instrument name elements
+        XMLModifier._set_or_create_element(instrument, "longName", choir_config["longName"])
+        XMLModifier._set_or_create_element(instrument, "shortName", choir_config["shortName"])
+        XMLModifier._set_or_create_element(instrument, "trackName", choir_config["longName"])
+        
+        # Set pitch ranges
+        XMLModifier._set_or_create_element(instrument, "minPitchP", choir_config["minPitchP"])
+        XMLModifier._set_or_create_element(instrument, "maxPitchP", choir_config["maxPitchP"])
+        XMLModifier._set_or_create_element(instrument, "minPitchA", choir_config["minPitchA"])
+        XMLModifier._set_or_create_element(instrument, "maxPitchA", choir_config["maxPitchA"])
+        
+        # Set instrument ID
+        XMLModifier._set_or_create_element(instrument, "instrumentId", choir_config["instrumentId"])
+        
+        # Set clef if specified
+        if "clef" in choir_config:
+            XMLModifier._set_or_create_element(instrument, "clef", choir_config["clef"])
+        
+        # Add glissandoStyle for choir voices
+        XMLModifier._set_or_create_element(instrument, "glissandoStyle", "portamento")
+        
+        # Remove any transposition settings (choir voices don't transpose)
+        for elem_name in ["transposeDiatonic", "transposeChromatic", "concertClef", "transposingClef"]:
+            elem = instrument.find(elem_name)
+            if elem is not None:
+                instrument.remove(elem)
+        
+        # Set up MIDI channel
+        channel = instrument.find(".//Channel")
+        if channel is None:
+            channel = ET.SubElement(instrument, "Channel")
+        
+        # Set program to 52 (Choir Aahs)
+        program = channel.find("program")
+        if program is None:
+            program = ET.SubElement(channel, "program")
+        program.set("value", "52")
+        
+        # Ensure synti is set to Fluid
+        synti = channel.find("synti")
+        if synti is None:
+            synti = ET.SubElement(channel, "synti")
+        synti.text = "Fluid"
