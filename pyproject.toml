@@ -8,7 +8,9 @@ version = "1.0.0"
 description = "A command line tool for converting MuseScore files to MP3 with voice highlighting"
 readme = "Readme.md"
 requires-python = ">=3.8"
-dependencies = []
+dependencies = [
+    "PyYAML>=6.0"
+]
 
 [project.scripts]
 musescore-to-mp3 = "musescore_to_mp3.cli:main"

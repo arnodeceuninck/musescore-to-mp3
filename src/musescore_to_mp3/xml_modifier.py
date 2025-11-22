@@ -1,7 +1,9 @@
 """XML modification utilities for MuseScore files."""
 
 import xml.etree.ElementTree as ET
-from typing import List
+from pathlib import Path
+from typing import Dict, List
+import yaml
 
 from .exceptions import XMLModificationError
 from .voice_matcher import VoiceMatcher
@@ -10,367 +12,44 @@ from .voice_matcher import VoiceMatcher
 class XMLModifier:
     """Handles modification of MuseScore XML."""
     
-    # Map voice groups to choir instruments with proper MIDI settings
-    VOICE_TO_CHOIR = {
-        "soprano": {
-            "id": "soprano",
-            "instrumentId": "voice.soprano",
-            "longName": "Soprano",
-            "shortName": "S.",
-            "minPitchP": "60",
-            "maxPitchP": "84",
-            "minPitchA": "60",
-            "maxPitchA": "79",
-        },
-        "soprano1": {
-            "id": "soprano",
-            "instrumentId": "voice.soprano",
-            "longName": "Soprano",
-            "shortName": "S.",
-            "minPitchP": "60",
-            "maxPitchP": "84",
-            "minPitchA": "60",
-            "maxPitchA": "79",
-        },
-        "soprano2": {
-            "id": "soprano",
-            "instrumentId": "voice.soprano",
-            "longName": "Soprano",
-            "shortName": "S.",
-            "minPitchP": "60",
-            "maxPitchP": "84",
-            "minPitchA": "60",
-            "maxPitchA": "79",
-        },
-        "alto": {
-            "id": "alto",
-            "instrumentId": "voice.alto",
-            "longName": "Alto",
-            "shortName": "A.",
-            "minPitchP": "52",
-            "maxPitchP": "77",
-            "minPitchA": "55",
-            "maxPitchA": "74",
-        },
-        "alto1": {
-            "id": "alto",
-            "instrumentId": "voice.alto",
-            "longName": "Alto",
-            "shortName": "A.",
-            "minPitchP": "52",
-            "maxPitchP": "77",
-            "minPitchA": "55",
-            "maxPitchA": "74",
-        },
-        "alto2": {
-            "id": "alto",
-            "instrumentId": "voice.alto",
-            "longName": "Alto",
-            "shortName": "A.",
-            "minPitchP": "52",
-            "maxPitchP": "77",
-            "minPitchA": "55",
-            "maxPitchA": "74",
-        },
-        "tenor": {
-            "id": "tenor",
-            "instrumentId": "voice.tenor",
-            "longName": "Tenor",
-            "shortName": "T.",
-            "minPitchP": "48",
-            "maxPitchP": "72",
-            "minPitchA": "48",
-            "maxPitchA": "69",
-            "clef": "G8vb",
-        },
-        "tenor1": {
-            "id": "tenor",
-            "instrumentId": "voice.tenor",
-            "longName": "Tenor",
-            "shortName": "T.",
-            "minPitchP": "48",
-            "maxPitchP": "72",
-            "minPitchA": "48",
-            "maxPitchA": "69",
-            "clef": "G8vb",
-        },
-        "tenor2": {
-            "id": "tenor",
-            "instrumentId": "voice.tenor",
-            "longName": "Tenor",
-            "shortName": "T.",
-            "minPitchP": "48",
-            "maxPitchP": "72",
-            "minPitchA": "48",
-            "maxPitchA": "69",
-            "clef": "G8vb",
-        },
-        "bass": {
-            "id": "bass",
-            "instrumentId": "voice.bass",
-            "longName": "Bass",
-            "shortName": "B.",
-            "minPitchP": "38",
-            "maxPitchP": "62",
-            "minPitchA": "41",
-            "maxPitchA": "60",
-            "clef": "F",
-        },
-        "bass1": {
-            "id": "bass",
-            "instrumentId": "voice.bass",
-            "longName": "Bass",
-            "shortName": "B.",
-            "minPitchP": "38",
-            "maxPitchP": "62",
-            "minPitchA": "41",
-            "maxPitchA": "60",
-            "clef": "F",
-        },
-        "bass2": {
-            "id": "bass",
-            "instrumentId": "voice.bass",
-            "longName": "Bass",
-            "shortName": "B.",
-            "minPitchP": "38",
-            "maxPitchP": "62",
-            "minPitchA": "41",
-            "maxPitchA": "60",
-            "clef": "F",
-        },
-        "baritone": {
-            "id": "bass",
-            "instrumentId": "voice.bass",
-            "longName": "Bass",
-            "shortName": "B.",
-            "minPitchP": "38",
-            "maxPitchP": "62",
-            "minPitchA": "41",
-            "maxPitchA": "60",
-            "clef": "F",
-        },
-        "baritone1": {
-            "id": "bass",
-            "instrumentId": "voice.bass",
-            "longName": "Bass",
-            "shortName": "B.",
-            "minPitchP": "38",
-            "maxPitchP": "62",
-            "minPitchA": "41",
-            "maxPitchA": "60",
-            "clef": "F",
-        },
-        "baritone2": {
-            "id": "bass",
-            "instrumentId": "voice.bass",
-            "longName": "Bass",
-            "shortName": "B.",
-            "minPitchP": "38",
-            "maxPitchP": "62",
-            "minPitchA": "41",
-            "maxPitchA": "60",
-            "clef": "F",
-        },
-    }
+    # Class variables to cache loaded configurations
+    _VOICE_TO_CHOIR: Dict[str, dict] = None
+    _VOICE_HIGHLIGHT: Dict[str, dict] = None
     
-    # Map voice groups to saxophone instruments with full properties
-    VOICE_TO_SAXOPHONE = {
-        "soprano": {
-            "id": "soprano-saxophone",
-            "instrumentId": "wind.reed.saxophone.soprano",
-            "longName": "Soprano Saxophone",
-            "shortName": "S. Sax.",
-            "program": "64",
-            "minPitchP": "56",
-            "maxPitchP": "91",
-            "minPitchA": "56",
-            "maxPitchA": "87",
-            "transposeDiatonic": "-1",
-            "transposeChromatic": "-2",
-        },
-        "soprano1": {
-            "id": "soprano-saxophone",
-            "instrumentId": "wind.reed.saxophone.soprano",
-            "longName": "Soprano Saxophone",
-            "shortName": "S. Sax.",
-            "program": "64",
-            "minPitchP": "56",
-            "maxPitchP": "91",
-            "minPitchA": "56",
-            "maxPitchA": "87",
-            "transposeDiatonic": "-1",
-            "transposeChromatic": "-2",
-        },
-        "soprano2": {
-            "id": "soprano-saxophone",
-            "instrumentId": "wind.reed.saxophone.soprano",
-            "longName": "Soprano Saxophone",
-            "shortName": "S. Sax.",
-            "program": "64",
-            "minPitchP": "56",
-            "maxPitchP": "91",
-            "minPitchA": "56",
-            "maxPitchA": "87",
-            "transposeDiatonic": "-1",
-            "transposeChromatic": "-2",
-        },
-        "alto": {
-            "id": "alto-saxophone",
-            "instrumentId": "wind.reed.saxophone.alto",
-            "longName": "Alto Saxophone",
-            "shortName": "A. Sax.",
-            "program": "65",
-            "minPitchP": "49",
-            "maxPitchP": "92",
-            "minPitchA": "49",
-            "maxPitchA": "80",
-            "transposeDiatonic": "-5",
-            "transposeChromatic": "-9",
-        },
-        "alto1": {
-            "id": "alto-saxophone",
-            "instrumentId": "wind.reed.saxophone.alto",
-            "longName": "Alto Saxophone",
-            "shortName": "A. Sax.",
-            "program": "65",
-            "minPitchP": "49",
-            "maxPitchP": "92",
-            "minPitchA": "49",
-            "maxPitchA": "80",
-            "transposeDiatonic": "-5",
-            "transposeChromatic": "-9",
-        },
-        "alto2": {
-            "id": "alto-saxophone",
-            "instrumentId": "wind.reed.saxophone.alto",
-            "longName": "Alto Saxophone",
-            "shortName": "A. Sax.",
-            "program": "65",
-            "minPitchP": "49",
-            "maxPitchP": "92",
-            "minPitchA": "49",
-            "maxPitchA": "80",
-            "transposeDiatonic": "-5",
-            "transposeChromatic": "-9",
-        },
-        "tenor": {
-            "id": "tenor-saxophone",
-            "instrumentId": "wind.reed.saxophone.tenor",
-            "longName": "Tenor Saxophone",
-            "shortName": "T. Sax.",
-            "program": "66",
-            "minPitchP": "44",
-            "maxPitchP": "87",
-            "minPitchA": "44",
-            "maxPitchA": "75",
-            "transposeDiatonic": "-8",
-            "transposeChromatic": "-14",
-        },
-        "tenor1": {
-            "id": "tenor-saxophone",
-            "instrumentId": "wind.reed.saxophone.tenor",
-            "longName": "Tenor Saxophone",
-            "shortName": "T. Sax.",
-            "program": "66",
-            "minPitchP": "44",
-            "maxPitchP": "87",
-            "minPitchA": "44",
-            "maxPitchA": "75",
-            "transposeDiatonic": "-8",
-            "transposeChromatic": "-14",
-        },
-        "tenor2": {
-            "id": "tenor-saxophone",
-            "instrumentId": "wind.reed.saxophone.tenor",
-            "longName": "Tenor Saxophone",
-            "shortName": "T. Sax.",
-            "program": "66",
-            "minPitchP": "44",
-            "maxPitchP": "87",
-            "minPitchA": "44",
-            "maxPitchA": "75",
-            "transposeDiatonic": "-8",
-            "transposeChromatic": "-14",
-        },
-        "baritone": {
-            "id": "baritone-saxophone",
-            "instrumentId": "wind.reed.saxophone.baritone",
-            "longName": "Baritone Saxophone",
-            "shortName": "Bar. Sax.",
-            "program": "67",
-            "minPitchP": "36",
-            "maxPitchP": "80",
-            "minPitchA": "36",
-            "maxPitchA": "68",
-            "transposeDiatonic": "-12",
-            "transposeChromatic": "-21",
-        },
-        "bass1": {
-            "id": "baritone-saxophone",
-            "instrumentId": "wind.reed.saxophone.baritone",
-            "longName": "Baritone Saxophone",
-            "shortName": "Bar. Sax.",
-            "program": "67",
-            "minPitchP": "36",
-            "maxPitchP": "80",
-            "minPitchA": "36",
-            "maxPitchA": "68",
-            "transposeDiatonic": "-12",
-            "transposeChromatic": "-21",
-        },
-        "bass": {
-            "id": "baritone-saxophone",
-            "instrumentId": "wind.reed.saxophone.baritone",
-            "longName": "Baritone Saxophone",
-            "shortName": "Bar. Sax.",
-            "program": "67",
-            "minPitchP": "36",
-            "maxPitchP": "80",
-            "minPitchA": "36",
-            "maxPitchA": "68",
-            "transposeDiatonic": "-12",
-            "transposeChromatic": "-21",
-        },
-        "bass2": {
-            "id": "baritone-saxophone",
-            "instrumentId": "wind.reed.saxophone.baritone",
-            "longName": "Baritone Saxophone",
-            "shortName": "Bar. Sax.",
-            "program": "67",
-            "minPitchP": "36",
-            "maxPitchP": "80",
-            "minPitchA": "36",
-            "maxPitchA": "68",
-            "transposeDiatonic": "-12",
-            "transposeChromatic": "-21",
-        },
-        "baritone1": {
-            "id": "baritone-saxophone",
-            "instrumentId": "wind.reed.saxophone.baritone",
-            "longName": "Baritone Saxophone",
-            "shortName": "Bar. Sax.",
-            "program": "67",
-            "minPitchP": "36",
-            "maxPitchP": "80",
-            "minPitchA": "36",
-            "maxPitchA": "68",
-            "transposeDiatonic": "-12",
-            "transposeChromatic": "-21",
-        },
-        "baritone2": {
-            "id": "baritone-saxophone",
-            "instrumentId": "wind.reed.saxophone.baritone",
-            "longName": "Baritone Saxophone",
-            "shortName": "Bar. Sax.",
-            "program": "67",
-            "minPitchP": "36",
-            "maxPitchP": "80",
-            "minPitchA": "36",
-            "maxPitchA": "68",
-            "transposeDiatonic": "-12",
-            "transposeChromatic": "-21",
-        },
-    }
+    @classmethod
+    def _load_config(cls, config_name: str) -> Dict[str, dict]:
+        """Load a configuration file from the config directory.
+        
+        Args:
+            config_name: Name of the config file (without .yaml extension)
+            
+        Returns:
+            Dictionary loaded from the YAML file
+        """
+        config_dir = Path(__file__).parent / "config"
+        config_file = config_dir / f"{config_name}.yaml"
+        
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                return yaml.safe_load(f)
+        except FileNotFoundError:
+            raise XMLModificationError(f"Configuration file not found: {config_file}")
+        except yaml.YAMLError as e:
+            raise XMLModificationError(f"Error parsing configuration file {config_file}: {e}")
+    
+    @classmethod
+    def get_voice_to_choir(cls) -> Dict[str, dict]:
+        """Lazy-load and return the choir instrument configuration."""
+        if cls._VOICE_TO_CHOIR is None:
+            cls._VOICE_TO_CHOIR = cls._load_config("choir_instruments")
+        return cls._VOICE_TO_CHOIR
+    
+    @classmethod
+    def get_voice_highlight_config(cls) -> Dict[str, dict]:
+        """Lazy-load and return the voice highlight instrument configuration."""
+        if cls._VOICE_HIGHLIGHT is None:
+            cls._VOICE_HIGHLIGHT = cls._load_config("voice_highlight")
+        return cls._VOICE_HIGHLIGHT
     
     @staticmethod
     def modify_voice_part(
@@ -406,15 +85,16 @@ class XMLModifier:
         target_part, matched_name = VoiceMatcher.find_part(tree, voice_group)
         
         try:
-            # Get the appropriate saxophone for this voice group
+            # Get the appropriate highlight instrument for this voice group
             voice_normalized = voice_group.lower().replace(" ", "")
-            sax_config = XMLModifier.VOICE_TO_SAXOPHONE.get(
+            highlight_config = XMLModifier.get_voice_highlight_config()
+            instrument_config = highlight_config.get(
                 voice_normalized,
-                XMLModifier.VOICE_TO_SAXOPHONE["bass"]  # Default to baritone sax
+                highlight_config["bass"]  # Default to baritone sax
             )
             
             # Modify the instrument
-            XMLModifier._replace_instrument(target_part, sax_config)
+            XMLModifier._replace_instrument(target_part, instrument_config)
             
             # Boost the voice volume
             XMLModifier._set_part_volume(target_part, 100 + voice_volume_boost)
@@ -430,12 +110,12 @@ class XMLModifier:
             raise XMLModificationError(f"Failed to modify voice part: {e}")
     
     @staticmethod
-    def _replace_instrument(part: ET.Element, sax_config: dict) -> None:
-        """Replace the instrument for a part with a saxophone.
+    def _replace_instrument(part: ET.Element, instrument_config: dict) -> None:
+        """Replace the instrument for a part with a highlight instrument.
         
         Args:
             part: The Part element to modify
-            sax_config: Dictionary with all saxophone properties
+            instrument_config: Dictionary with all instrument properties
         """
         # Find the Instrument element
         instrument = part.find(".//Instrument")
@@ -448,25 +128,25 @@ class XMLModifier:
             instrument = ET.SubElement(staff, "Instrument")
         
         # Set the id attribute (e.g., "soprano-saxophone")
-        instrument.set("id", sax_config["id"])
+        instrument.set("id", instrument_config["id"])
         
         # Update or create instrument name elements
-        XMLModifier._set_or_create_element(instrument, "longName", sax_config["longName"])
-        XMLModifier._set_or_create_element(instrument, "shortName", sax_config["shortName"])
-        XMLModifier._set_or_create_element(instrument, "trackName", sax_config["longName"])
+        XMLModifier._set_or_create_element(instrument, "longName", instrument_config["longName"])
+        XMLModifier._set_or_create_element(instrument, "shortName", instrument_config["shortName"])
+        XMLModifier._set_or_create_element(instrument, "trackName", instrument_config["longName"])
         
         # Set pitch ranges
-        XMLModifier._set_or_create_element(instrument, "minPitchP", sax_config["minPitchP"])
-        XMLModifier._set_or_create_element(instrument, "maxPitchP", sax_config["maxPitchP"])
-        XMLModifier._set_or_create_element(instrument, "minPitchA", sax_config["minPitchA"])
-        XMLModifier._set_or_create_element(instrument, "maxPitchA", sax_config["maxPitchA"])
+        XMLModifier._set_or_create_element(instrument, "minPitchP", instrument_config["minPitchP"])
+        XMLModifier._set_or_create_element(instrument, "maxPitchP", instrument_config["maxPitchP"])
+        XMLModifier._set_or_create_element(instrument, "minPitchA", instrument_config["minPitchA"])
+        XMLModifier._set_or_create_element(instrument, "maxPitchA", instrument_config["maxPitchA"])
         
         # Set transposition
-        XMLModifier._set_or_create_element(instrument, "transposeDiatonic", sax_config["transposeDiatonic"])
-        XMLModifier._set_or_create_element(instrument, "transposeChromatic", sax_config["transposeChromatic"])
+        XMLModifier._set_or_create_element(instrument, "transposeDiatonic", instrument_config["transposeDiatonic"])
+        XMLModifier._set_or_create_element(instrument, "transposeChromatic", instrument_config["transposeChromatic"])
         
         # Set instrument ID (critical for MuseScore to recognize the instrument)
-        XMLModifier._set_or_create_element(instrument, "instrumentId", sax_config["instrumentId"])
+        XMLModifier._set_or_create_element(instrument, "instrumentId", instrument_config["instrumentId"])
         
         # Set MIDI program (General MIDI instrument number)
         channel = instrument.find(".//Channel")
@@ -476,7 +156,7 @@ class XMLModifier:
         program = channel.find("program")
         if program is None:
             program = ET.SubElement(channel, "program")
-        program.set("value", sax_config["program"])
+        program.set("value", instrument_config["program"])
         
         # Ensure synti is set
         synti = channel.find("synti")
@@ -616,7 +296,8 @@ class XMLModifier:
             voice_type = instrument_id.replace("voice.", "")  # e.g., "soprano", "alto", "tenor", "bass"
             
             # Get the choir configuration for this voice type
-            choir_config = XMLModifier.VOICE_TO_CHOIR.get(voice_type)
+            choir_configs = XMLModifier.get_voice_to_choir()
+            choir_config = choir_configs.get(voice_type)
             if not choir_config:
                 # Unknown voice type, skip
                 continue

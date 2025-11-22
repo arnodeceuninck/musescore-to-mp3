@@ -1,0 +1,198 @@
+# Configuration for voice highlight instruments
+# Maps voice groups to MuseScore instruments used for highlighting
+# By default, saxophones are used, but you can configure any instrument you prefer
+
+soprano:
+  id: soprano-saxophone
+  instrumentId: wind.reed.saxophone.soprano
+  longName: Soprano Saxophone
+  shortName: S. Sax.
+  program: "64"
+  minPitchP: "56"
+  maxPitchP: "91"
+  minPitchA: "56"
+  maxPitchA: "87"
+  transposeDiatonic: "-1"
+  transposeChromatic: "-2"
+
+soprano1:
+  id: soprano-saxophone
+  instrumentId: wind.reed.saxophone.soprano
+  longName: Soprano Saxophone
+  shortName: S. Sax.
+  program: "64"
+  minPitchP: "56"
+  maxPitchP: "91"
+  minPitchA: "56"
+  maxPitchA: "87"
+  transposeDiatonic: "-1"
+  transposeChromatic: "-2"
+
+soprano2:
+  id: soprano-saxophone
+  instrumentId: wind.reed.saxophone.soprano
+  longName: Soprano Saxophone
+  shortName: S. Sax.
+  program: "64"
+  minPitchP: "56"
+  maxPitchP: "91"
+  minPitchA: "56"
+  maxPitchA: "87"
+  transposeDiatonic: "-1"
+  transposeChromatic: "-2"
+
+alto:
+  id: alto-saxophone
+  instrumentId: wind.reed.saxophone.alto
+  longName: Alto Saxophone
+  shortName: A. Sax.
+  program: "65"
+  minPitchP: "49"
+  maxPitchP: "92"
+  minPitchA: "49"
+  maxPitchA: "80"
+  transposeDiatonic: "-5"
+  transposeChromatic: "-9"
+
+alto1:
+  id: alto-saxophone
+  instrumentId: wind.reed.saxophone.alto
+  longName: Alto Saxophone
+  shortName: A. Sax.
+  program: "65"
+  minPitchP: "49"
+  maxPitchP: "92"
+  minPitchA: "49"
+  maxPitchA: "80"
+  transposeDiatonic: "-5"
+  transposeChromatic: "-9"
+
+alto2:
+  id: alto-saxophone
+  instrumentId: wind.reed.saxophone.alto
+  longName: Alto Saxophone
+  shortName: A. Sax.
+  program: "65"
+  minPitchP: "49"
+  maxPitchP: "92"
+  minPitchA: "49"
+  maxPitchA: "80"
+  transposeDiatonic: "-5"
+  transposeChromatic: "-9"
+
+tenor:
+  id: tenor-saxophone
+  instrumentId: wind.reed.saxophone.tenor
+  longName: Tenor Saxophone
+  shortName: T. Sax.
+  program: "66"
+  minPitchP: "44"
+  maxPitchP: "87"
+  minPitchA: "44"
+  maxPitchA: "75"
+  transposeDiatonic: "-8"
+  transposeChromatic: "-14"
+
+tenor1:
+  id: tenor-saxophone
+  instrumentId: wind.reed.saxophone.tenor
+  longName: Tenor Saxophone
+  shortName: T. Sax.
+  program: "66"
+  minPitchP: "44"
+  maxPitchP: "87"
+  minPitchA: "44"
+  maxPitchA: "75"
+  transposeDiatonic: "-8"
+  transposeChromatic: "-14"
+
+tenor2:
+  id: tenor-saxophone
+  instrumentId: wind.reed.saxophone.tenor
+  longName: Tenor Saxophone
+  shortName: T. Sax.
+  program: "66"
+  minPitchP: "44"
+  maxPitchP: "87"
+  minPitchA: "44"
+  maxPitchA: "75"
+  transposeDiatonic: "-8"
+  transposeChromatic: "-14"
+
+baritone:
+  id: baritone-saxophone
+  instrumentId: wind.reed.saxophone.baritone
+  longName: Baritone Saxophone
+  shortName: Bar. Sax.
+  program: "67"
+  minPitchP: "36"
+  maxPitchP: "80"
+  minPitchA: "36"
+  maxPitchA: "68"
+  transposeDiatonic: "-12"
+  transposeChromatic: "-21"
+
+bass1:
+  id: baritone-saxophone
+  instrumentId: wind.reed.saxophone.baritone
+  longName: Baritone Saxophone
+  shortName: Bar. Sax.
+  program: "67"
+  minPitchP: "36"
+  maxPitchP: "80"
+  minPitchA: "36"
+  maxPitchA: "68"
+  transposeDiatonic: "-12"
+  transposeChromatic: "-21"
+
+bass:
+  id: baritone-saxophone
+  instrumentId: wind.reed.saxophone.baritone
+  longName: Baritone Saxophone
+  shortName: Bar. Sax.
+  program: "67"
+  minPitchP: "36"
+  maxPitchP: "80"
+  minPitchA: "36"
+  maxPitchA: "68"
+  transposeDiatonic: "-12"
+  transposeChromatic: "-21"
+
+bass2:
+  id: baritone-saxophone
+  instrumentId: wind.reed.saxophone.baritone
+  longName: Baritone Saxophone
+  shortName: Bar. Sax.
+  program: "67"
+  minPitchP: "36"
+  maxPitchP: "80"
+  minPitchA: "36"
+  maxPitchA: "68"
+  transposeDiatonic: "-12"
+  transposeChromatic: "-21"
+
+baritone1:
+  id: baritone-saxophone
+  instrumentId: wind.reed.saxophone.baritone
+  longName: Baritone Saxophone
+  shortName: Bar. Sax.
+  program: "67"
+  minPitchP: "36"
+  maxPitchP: "80"
+  minPitchA: "36"
+  maxPitchA: "68"
+  transposeDiatonic: "-12"
+  transposeChromatic: "-21"
+
+baritone2:
+  id: baritone-saxophone
+  instrumentId: wind.reed.saxophone.baritone
+  longName: Baritone Saxophone
+  shortName: Bar. Sax.
+  program: "67"
+  minPitchP: "36"
+  maxPitchP: "80"
+  minPitchA: "36"
+  maxPitchA: "68"
+  transposeDiatonic: "-12"
+  transposeChromatic: "-21"

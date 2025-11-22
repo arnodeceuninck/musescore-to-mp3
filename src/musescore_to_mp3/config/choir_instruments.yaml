@@ -1,0 +1,161 @@
+# Configuration for choir voice instruments
+# Maps voice groups to MuseScore choir instrument settings
+
+soprano:
+  id: soprano
+  instrumentId: voice.soprano
+  longName: Soprano
+  shortName: S.
+  minPitchP: "60"
+  maxPitchP: "84"
+  minPitchA: "60"
+  maxPitchA: "79"
+
+soprano1:
+  id: soprano
+  instrumentId: voice.soprano
+  longName: Soprano
+  shortName: S.
+  minPitchP: "60"
+  maxPitchP: "84"
+  minPitchA: "60"
+  maxPitchA: "79"
+
+soprano2:
+  id: soprano
+  instrumentId: voice.soprano
+  longName: Soprano
+  shortName: S.
+  minPitchP: "60"
+  maxPitchP: "84"
+  minPitchA: "60"
+  maxPitchA: "79"
+
+alto:
+  id: alto
+  instrumentId: voice.alto
+  longName: Alto
+  shortName: A.
+  minPitchP: "52"
+  maxPitchP: "77"
+  minPitchA: "55"
+  maxPitchA: "74"
+
+alto1:
+  id: alto
+  instrumentId: voice.alto
+  longName: Alto
+  shortName: A.
+  minPitchP: "52"
+  maxPitchP: "77"
+  minPitchA: "55"
+  maxPitchA: "74"
+
+alto2:
+  id: alto
+  instrumentId: voice.alto
+  longName: Alto
+  shortName: A.
+  minPitchP: "52"
+  maxPitchP: "77"
+  minPitchA: "55"
+  maxPitchA: "74"
+
+tenor:
+  id: tenor
+  instrumentId: voice.tenor
+  longName: Tenor
+  shortName: T.
+  minPitchP: "48"
+  maxPitchP: "72"
+  minPitchA: "48"
+  maxPitchA: "69"
+  clef: G8vb
+
+tenor1:
+  id: tenor
+  instrumentId: voice.tenor
+  longName: Tenor
+  shortName: T.
+  minPitchP: "48"
+  maxPitchP: "72"
+  minPitchA: "48"
+  maxPitchA: "69"
+  clef: G8vb
+
+tenor2:
+  id: tenor
+  instrumentId: voice.tenor
+  longName: Tenor
+  shortName: T.
+  minPitchP: "48"
+  maxPitchP: "72"
+  minPitchA: "48"
+  maxPitchA: "69"
+  clef: G8vb
+
+bass:
+  id: bass
+  instrumentId: voice.bass
+  longName: Bass
+  shortName: B.
+  minPitchP: "38"
+  maxPitchP: "62"
+  minPitchA: "41"
+  maxPitchA: "60"
+  clef: F
+
+bass1:
+  id: bass
+  instrumentId: voice.bass
+  longName: Bass
+  shortName: B.
+  minPitchP: "38"
+  maxPitchP: "62"
+  minPitchA: "41"
+  maxPitchA: "60"
+  clef: F
+
+bass2:
+  id: bass
+  instrumentId: voice.bass
+  longName: Bass
+  shortName: B.
+  minPitchP: "38"
+  maxPitchP: "62"
+  minPitchA: "41"
+  maxPitchA: "60"
+  clef: F
+
+baritone:
+  id: bass
+  instrumentId: voice.bass
+  longName: Bass
+  shortName: B.
+  minPitchP: "38"
+  maxPitchP: "62"
+  minPitchA: "41"
+  maxPitchA: "60"
+  clef: F
+
+baritone1:
+  id: bass
+  instrumentId: voice.bass
+  longName: Bass
+  shortName: B.
+  minPitchP: "38"
+  maxPitchP: "62"
+  minPitchA: "41"
+  maxPitchA: "60"
+  clef: F
+
+baritone2:
+  id: bass
+  instrumentId: voice.bass
+  longName: Bass
+  shortName: B.
+  minPitchP: "38"
+  maxPitchP: "62"
+  minPitchA: "41"
+  maxPitchA: "60"
+  clef: F
