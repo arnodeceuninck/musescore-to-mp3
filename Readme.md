@@ -17,9 +17,14 @@ pip install -e .
 
 ## Usage
 
-Basic conversion:
+Basic conversion (single file):
 ```bash
 python -m musescore_to_mp3.cli input.mscz
+```
+
+Process all files in a directory:
+```bash
+python -m musescore_to_mp3.cli my_scores/
 ```
 
 With voice highlighting:
@@ -32,6 +37,11 @@ Export all voice parts (one MP3 per voice):
 python -m musescore_to_mp3.cli --all-voices input.mscz
 ```
 
+Process directory with all voices exported:
+```bash
+python -m musescore_to_mp3.cli --all-voices my_scores/
+```
+
 All options:
 ```bash
 python -m musescore_to_mp3.cli --help
@@ -42,6 +52,7 @@ python -m musescore_to_mp3.cli --help
 ## Features
 
 - Convert `.mscz` files to MP3
+- **Process entire directories**: Convert all `.mscz` files in a directory with a single command
 - **Export all voice parts**: Generate separate MP3 files for each voice in the score with a single command
 - Highlight specific voice parts (soprano, alto, tenor, baritone, bass)
 - Support for sub-voice groups (soprano1, soprano2, alto1, alto2, tenor1, tenor2, bass1, bass2)
@@ -58,10 +69,10 @@ python -m musescore_to_mp3.cli --help
 
 ```
 positional arguments:
-  input_file            Input MuseScore file (.mscz)
+  input_file            Input MuseScore file (.mscz) or directory containing .mscz files
 
 optional arguments:
-  -o, --output          Output MP3 file path (or directory for --all-voices)
+  -o, --output          Output MP3 file path (or directory for --all-voices or directory input)
   -v, --voice-group     Voice group to highlight
   --all-voices          Export MP3s for all voice parts (one file per voice)
   --volume-boost        Volume boost in dB (default: 12)
@@ -105,4 +116,32 @@ python -m musescore_to_mp3.cli --all-voices --output my_parts input.mscz
 ```bash
 python -m musescore_to_mp3.cli --voice-group tenor --volume-boost 20 --master-volume 50 input.mscz
 # Higher boost for highlighted voice, quieter background
+```
+
+**Process entire directory (plain conversion):**
+```bash
+python -m musescore_to_mp3.cli my_scores/
+# Converts all .mscz files in my_scores/ directory
+# Outputs: my_scores/song1_output.mp3, my_scores/song2_output.mp3, etc.
+```
+
+**Process directory with voice highlighting:**
+```bash
+python -m musescore_to_mp3.cli --voice-group bass my_scores/
+# Highlights bass in all files in the directory
+```
+
+**Process directory and export all voices for each file:**
+```bash
+python -m musescore_to_mp3.cli --all-voices my_scores/
+# Creates subdirectories for each file:
+#   my_scores/song1_voices/
+#     song1_all.mp3
+#     song1_01_Soprano.mp3
+#     song1_02_Alto.mp3
+#     ...
+#   my_scores/song2_voices/
+#     song2_all.mp3
+#     song2_01_Soprano.mp3
+#     ...
 ```

@@ -272,6 +272,108 @@ class MuseScoreConverter:
         
         return generated_files
     
+    def convert_directory(
+        self,
+        input_dir: Path,
+        output_dir: Optional[Path] = None,
+        voice_group: Optional[str] = None,
+        all_voices: bool = False,
+        voice_volume_boost: int = 10,
+        master_volume: int = 80,
+    ) -> dict:
+        """Convert all MuseScore files in a directory to MP3.
+        
+        Args:
+            input_dir: Directory containing .mscz files
+            output_dir: Directory to save MP3s (default: same as input_dir)
+            voice_group: Voice group to highlight (if specified)
+            all_voices: If True, export all voice parts for each file
+            voice_volume_boost: Volume boost for the voice in dB
+            master_volume: Master volume percentage for other parts
+            
+        Returns:
+            Dictionary mapping input files to their output files/directories
+            
+        Raises:
+            FileNotFoundError: If the directory doesn't exist
+        """
+        if not input_dir.is_dir():
+            raise FileNotFoundError(f"Directory not found: {input_dir}")
+        
+        # Find all .mscz files in the directory
+        mscz_files = sorted(input_dir.glob("*.mscz"))
+        
+        if not mscz_files:
+            print(f"No .mscz files found in '{input_dir}'")
+            return {}
+        
+        print(f"Found {len(mscz_files)} .mscz file(s) in '{input_dir}':")
+        for mscz_file in mscz_files:
+            print(f"  - {mscz_file.name}")
+        
+        # Use input directory as output directory if not specified
+        if output_dir is None:
+            output_dir = input_dir
+        
+        results = {}
+        
+        # Process each file
+        for i, mscz_file in enumerate(mscz_files, 1):
+            print(f"\n{'='*60}")
+            print(f"Processing file {i}/{len(mscz_files)}: {mscz_file.name}")
+            print(f"{'='*60}")
+            
+            try:
+                if all_voices:
+                    # Export all voices for this file
+                    file_output_dir = output_dir / f"{mscz_file.stem}_voices"
+                    generated_files = self.convert_all_voices(
+                        input_file=mscz_file,
+                        output_dir=file_output_dir,
+                        voice_volume_boost=voice_volume_boost,
+                        master_volume=master_volume,
+                    )
+                    results[mscz_file] = file_output_dir
+                    print(f"✓ Exported {len(generated_files)} file(s) to '{file_output_dir}'")
+                    
+                elif voice_group:
+                    # Export with specific voice highlighted
+                    output_file = output_dir / f"{mscz_file.stem}_output.mp3"
+                    self.convert_with_voice_highlight(
+                        input_file=mscz_file,
+                        output_file=output_file,
+                        voice_group=voice_group,
+                        voice_volume_boost=voice_volume_boost,
+                        master_volume=master_volume,
+                    )
+                    results[mscz_file] = output_file
+                    print(f"✓ Created '{output_file.name}'")
+                    
+                else:
+                    # Plain conversion
+                    output_file = output_dir / f"{mscz_file.stem}_output.mp3"
+                    self.convert(
+                        input_file=mscz_file,
+                        output_file=output_file,
+                    )
+                    results[mscz_file] = output_file
+                    print(f"✓ Created '{output_file.name}'")
+                    
+            except Exception as e:
+                print(f"✗ Failed to process '{mscz_file.name}': {e}")
+                results[mscz_file] = None
+                continue
+        
+        # Print summary
+        print(f"\n{'='*60}")
+        print(f"SUMMARY: Processed {len(mscz_files)} file(s)")
+        successful = sum(1 for v in results.values() if v is not None)
+        print(f"  ✓ Successful: {successful}")
+        print(f"  ✗ Failed: {len(mscz_files) - successful}")
+        print(f"{'='*60}")
+        
+        return results
+    
     @staticmethod
     def _sanitize_filename(filename: str) -> str:
         """Sanitize a filename by removing or replacing invalid characters.

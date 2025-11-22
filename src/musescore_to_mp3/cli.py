@@ -30,13 +30,15 @@ Examples:
   %(prog)s --voice-group tenor --volume-boost 20 input.mscz
   %(prog)s --all-voices input.mscz
   %(prog)s --all-voices --output my_voices_dir input.mscz
+  %(prog)s --all-voices my_scores_directory/
+  %(prog)s --voice-group bass my_scores_directory/
         """,
     )
     
     parser.add_argument(
         "input_file",
         type=str,
-        help="Input MuseScore file (.mscz)",
+        help="Input MuseScore file (.mscz) or directory containing .mscz files",
     )
     
     parser.add_argument(
@@ -107,10 +109,13 @@ def main(args: Optional[list] = None) -> int:
     # Validate input file
     input_path = Path(parsed_args.input_file)
     if not input_path.exists():
-        print(f"Error: Input file '{input_path}' does not exist", file=sys.stderr)
+        print(f"Error: Input path '{input_path}' does not exist", file=sys.stderr)
         return 1
     
-    if not input_path.suffix.lower() == ".mscz":
+    # Check if input is a directory or file
+    is_directory = input_path.is_dir()
+    
+    if not is_directory and not input_path.suffix.lower() == ".mscz":
         print(f"Error: Input file must be a .mscz file", file=sys.stderr)
         return 1
     
@@ -119,9 +124,15 @@ def main(args: Optional[list] = None) -> int:
         print(f"Error: Cannot use both --all-voices and --voice-group", file=sys.stderr)
         return 1
     
-    # Determine output file path or directory
-    if parsed_args.all_voices:
-        # For all-voices, output is a directory
+    # Determine output file path or directory based on input type
+    if is_directory:
+        # For directory input, output defaults to the same directory
+        if parsed_args.output:
+            output_path = Path(parsed_args.output)
+        else:
+            output_path = input_path
+    elif parsed_args.all_voices:
+        # For all-voices with single file, output is a directory
         if parsed_args.output:
             output_path = Path(parsed_args.output)
         else:
@@ -140,9 +151,29 @@ def main(args: Optional[list] = None) -> int:
             keep_temp_files=parsed_args.keep_temp,
         )
         
-        # Convert file
-        if parsed_args.all_voices:
-            # Export all voice parts
+        # Convert file(s)
+        if is_directory:
+            # Process all .mscz files in directory
+            print(f"Processing directory: '{input_path}'")
+            if parsed_args.output:
+                print(f"Output directory: '{output_path}'")
+            print()
+            
+            results = converter.convert_directory(
+                input_dir=input_path,
+                output_dir=output_path,
+                voice_group=parsed_args.voice_group,
+                all_voices=parsed_args.all_voices,
+                voice_volume_boost=parsed_args.volume_boost,
+                master_volume=parsed_args.master_volume,
+            )
+            
+            # Return success if at least one file was processed successfully
+            successful = sum(1 for v in results.values() if v is not None)
+            return 0 if successful > 0 else 1
+            
+        elif parsed_args.all_voices:
+            # Export all voice parts from single file
             print(f"Converting all voice parts from '{input_path}'...")
             print(f"Output directory: '{output_path}'\n")
             
