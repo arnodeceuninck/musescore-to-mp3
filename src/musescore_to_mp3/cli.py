@@ -52,15 +52,15 @@ Examples:
     parser.add_argument(
         "--volume-boost",
         type=int,
-        default=10,
-        help="Volume boost for the highlighted voice in dB (default: 10)",
+        default=12,
+        help="Volume boost for the highlighted voice in dB (default: 12)",
     )
     
     parser.add_argument(
         "--master-volume",
         type=int,
-        default=80,
-        help="Master volume percentage for non-highlighted parts (default: 80)",
+        default=60,
+        help="Master volume percentage for non-highlighted parts (default: 60)",
     )
     
     parser.add_argument(
