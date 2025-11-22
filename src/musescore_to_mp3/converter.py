@@ -231,6 +231,21 @@ class MuseScoreConverter:
         generated_files = []
         base_name = input_file.stem
         
+        # First, create a regular MP3 without any highlighting
+        print(f"\n[0/{len(parts)}] Creating regular MP3 (no voice highlighting)...")
+        regular_output = output_dir / f"{base_name}_all.mp3"
+        
+        try:
+            self.convert(
+                input_file=input_file,
+                output_file=regular_output,
+            )
+            generated_files.append(regular_output)
+            print(f"  ✓ Created '{regular_output.name}'")
+        except Exception as e:
+            print(f"  ✗ Failed to create regular MP3: {e}")
+        
+        # Now generate MP3 for each voice part with highlighting
         for i, (part_element, part_name) in enumerate(parts, 1):
             # Create a safe filename from the part name
             safe_name = self._sanitize_filename(part_name)

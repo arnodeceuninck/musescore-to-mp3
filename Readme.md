@@ -88,10 +88,11 @@ python -m musescore_to_mp3.cli --voice-group bass input.mscz
 ```bash
 python -m musescore_to_mp3.cli --all-voices input.mscz
 # Output directory: input_voices/
-#   input_01_Soprano.mp3
-#   input_02_Alto.mp3
-#   input_03_Tenor.mp3
-#   input_04_Bass.mp3
+#   input_all.mp3          (no voice highlighted)
+#   input_01_Soprano.mp3   (soprano highlighted)
+#   input_02_Alto.mp3      (alto highlighted)
+#   input_03_Tenor.mp3     (tenor highlighted)
+#   input_04_Bass.mp3      (bass highlighted)
 ```
 
 **Export all voices to custom directory:**
