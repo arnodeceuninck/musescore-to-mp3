@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "musescore-to-mp3"
+version = "1.0.0"
+description = "A command line tool for converting MuseScore files to MP3 with voice highlighting"
+readme = "Readme.md"
+requires-python = ">=3.8"
+dependencies = []
+
+[project.scripts]
+musescore-to-mp3 = "musescore_to_mp3.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/musescore_to_mp3"]
