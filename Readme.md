@@ -29,17 +29,17 @@ python -m musescore_to_mp3.cli my_scores/
 
 With voice highlighting:
 ```bash
-python -m musescore_to_mp3.cli --voice-group bass input.mscz
+python -m musescore_to_mp3.cli --voice-group bass --use-choir input.mscz
 ```
 
 Export all voice parts (one MP3 per voice):
 ```bash
-python -m musescore_to_mp3.cli --all-voices input.mscz
+python -m musescore_to_mp3.cli --all-voices --use-choir input.mscz
 ```
 
 Process directory with all voices exported:
 ```bash
-python -m musescore_to_mp3.cli --all-voices my_scores/
+python -m musescore_to_mp3.cli --all-voices --use-choir my_scores/
 ```
 
 All options:
@@ -54,13 +54,15 @@ python -m musescore_to_mp3.cli --help
 - Convert `.mscz` files to MP3
 - **Process entire directories**: Convert all `.mscz` files in a directory with a single command
 - **Export all voice parts**: Generate separate MP3 files for each voice in the score with a single command
+- **Choir instrument conversion**: Convert non-highlighted voice parts to proper choir instruments for better sound quality
 - Highlight specific voice parts (soprano, alto, tenor, baritone, bass)
 - Support for sub-voice groups (soprano1, soprano2, alto1, alto2, tenor1, tenor2, bass1, bass2)
-- Automatically replaces voice with matching saxophone:
+- Automatically replaces highlighted voice with matching saxophone:
   - Soprano → Soprano Saxophone
   - Alto → Alto Saxophone
   - Tenor → Tenor Saxophone
   - Baritone/Bass → Baritone Saxophone
+- When using `--use-choir`, non-highlighted voices are converted to choir instruments (prevents issues with non-standard instruments like clarinet)
 - Adjust volume levels
 - Smart voice detection with fuzzy matching
 - Organized output with numbered files for batch exports
@@ -75,6 +77,7 @@ optional arguments:
   -o, --output          Output MP3 file path (or directory for --all-voices or directory input)
   -v, --voice-group     Voice group to highlight
   --all-voices          Export MP3s for all voice parts (one file per voice)
+  --use-choir           Convert non-highlighted voice parts to choir instruments (recommended)
   --volume-boost        Volume boost in dB (default: 12)
   --master-volume       Master volume % for other parts (default: 60)
   --musescore-path      Path to MuseScore executable
@@ -91,30 +94,30 @@ python -m musescore_to_mp3.cli input.mscz
 
 **Single voice highlighting:**
 ```bash
-python -m musescore_to_mp3.cli --voice-group bass input.mscz
-# Output: input_output.mp3 (with bass highlighted)
+python -m musescore_to_mp3.cli --voice-group bass --use-choir input.mscz
+# Output: input_output.mp3 (with bass highlighted, other voices as choir)
 ```
 
 **Export all voices:**
 ```bash
-python -m musescore_to_mp3.cli --all-voices input.mscz
+python -m musescore_to_mp3.cli --all-voices --use-choir input.mscz
 # Output directory: input_voices/
 #   input_all.mp3          (no voice highlighted)
-#   input_01_Soprano.mp3   (soprano highlighted)
-#   input_02_Alto.mp3      (alto highlighted)
-#   input_03_Tenor.mp3     (tenor highlighted)
-#   input_04_Bass.mp3      (bass highlighted)
+#   input_01_Soprano.mp3   (soprano highlighted, others as choir)
+#   input_02_Alto.mp3      (alto highlighted, others as choir)
+#   input_03_Tenor.mp3     (tenor highlighted, others as choir)
+#   input_04_Bass.mp3      (bass highlighted, others as choir)
 ```
 
 **Export all voices to custom directory:**
 ```bash
-python -m musescore_to_mp3.cli --all-voices --output my_parts input.mscz
+python -m musescore_to_mp3.cli --all-voices --use-choir --output my_parts input.mscz
 # Output directory: my_parts/
 ```
 
 **Adjust volume settings:**
 ```bash
-python -m musescore_to_mp3.cli --voice-group tenor --volume-boost 20 --master-volume 50 input.mscz
+python -m musescore_to_mp3.cli --voice-group tenor --use-choir --volume-boost 20 --master-volume 50 input.mscz
 # Higher boost for highlighted voice, quieter background
 ```
 
@@ -127,18 +130,18 @@ python -m musescore_to_mp3.cli my_scores/
 
 **Process directory with voice highlighting:**
 ```bash
-python -m musescore_to_mp3.cli --voice-group bass my_scores/
-# Highlights bass in all files in the directory
+python -m musescore_to_mp3.cli --voice-group bass --use-choir my_scores/
+# Highlights bass in all files in the directory with other voices as choir
 ```
 
 **Process directory and export all voices for each file:**
 ```bash
-python -m musescore_to_mp3.cli --all-voices my_scores/
+python -m musescore_to_mp3.cli --all-voices --use-choir my_scores/
 # Creates subdirectories for each file:
 #   my_scores/song1_voices/
 #     song1_all.mp3
-#     song1_01_Soprano.mp3
-#     song1_02_Alto.mp3
+#     song1_01_Soprano.mp3 (soprano highlighted, others as choir)
+#     song1_02_Alto.mp3    (alto highlighted, others as choir)
 #     ...
 #   my_scores/song2_voices/
 #     song2_all.mp3
